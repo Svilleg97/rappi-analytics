@@ -9,7 +9,6 @@ env/
 .env.production
 
 # Datos sensibles
-data/rappi_data.xlsx
 data/history/
 data/reports/
 
