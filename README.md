@@ -88,7 +88,7 @@ rappi-analytics/
 ├── models/
 │   └── schemas.py          # Tipos Pydantic para validación de requests
 ├── data/
-│   ├── rappi_data.xlsx     # Dataset operacional (no incluido en repo)
+│   ├── rappi_data.xlsx     # Dataset operacional anonimizado (incluido en repo)
 │   ├── history/            # Conversaciones guardadas (JSON)
 │   └── reports/            # Reportes generados (JSON + HTML)
 └── frontend/
