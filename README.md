@@ -113,7 +113,7 @@ rappi-analytics/
 
 ```bash
 # 1. Clonar el repositorio
-git clone <repo-url>
+git clone https://github.com/Svilleg97/rappi-analytics.git
 cd rappi-analytics
 
 # 2. Crear entorno virtual
@@ -127,13 +127,14 @@ pip install -r requirements.txt
 # 4. Configurar variables de entorno
 cp .env.example .env
 # Editar .env y agregar tu ANTHROPIC_API_KEY
+# Editar .env y reemplazar ANTHROPIC_API_KEY con tu clave real
 
-# 5. Agregar el archivo de datos
-# Copiar rappi_data.xlsx a data/rappi_data.xlsx
-
-# 6. Iniciar el servidor
+# 5. Iniciar el servidor
 python3 main.py
 ```
+
+> ✅ El dataset (`data/rappi_data.xlsx`) ya está incluido en el repositorio.
+> Son datos anonimizados del caso técnico. No necesitas agregar ningún archivo adicional.
 
 Abrir `http://localhost:8000` en el navegador.
 
