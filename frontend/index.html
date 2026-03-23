@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rappi Analytics Platform</title>
+  <link rel="icon" href="/static/favicon.png" type="image/png">
+  <link rel="stylesheet" href="/static/style.css">
+  <!-- Plotly para gráficos interactivos -->
+  <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+  <!-- Marked para renderizar markdown en el chat -->
+  <script src="https://cdn.jsdelivr.net/npm/marked@4.3.0/marked.min.js"></script>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════════
+     PANTALLA DE LOGIN
+══════════════════════════════════════════════════════════ -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="login-logo-icon">
+        <img src="/static/logo.png" alt="Rappi" onerror="this.style.display='none';this.parentElement.innerHTML='<span style=color:#fff;font-weight:700;font-size:18px>R</span>'">
+      </div>
+      <div>
+        <div style="font-size:18px;font-weight:700">Rappi Analytics</div>
+        <div style="font-size:11px;color:var(--text2);margin-top:2px">SP&A Intelligence Platform</div>
+      </div>
+    </div>
+    <div class="login-title">Bienvenido</div>
+    <div class="login-sub">Ingresa con tus credenciales de equipo</div>
+
+    <div class="login-error" id="login-error">Credenciales incorrectas. Intenta de nuevo.</div>
+
+    <div class="form-group">
+      <label class="form-label">Usuario</label>
+      <input class="form-input" type="text" id="login-user" value="rappi_demo" autocomplete="username">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Contraseña</label>
+      <input class="form-input" type="password" id="login-pass" value="demo123" autocomplete="current-password">
+    </div>
+    <div class="login-hint">
+      <b>Usuario de prueba</b>
+      usuario: <code>rappi_demo</code> · contraseña: <code>demo123</code>
+    </div>
+    <button class="btn-login" id="login-btn" onclick="doLogin()">
+      Ingresar a la plataforma →
+    </button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     APP PRINCIPAL
+══════════════════════════════════════════════════════════ -->
+<div id="app" class="hidden">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon">
+        <img src="/static/logo.png" alt="Rappi" onerror="this.outerHTML='<div class=&quot;sidebar-logo-icon&quot; style=&quot;background:var(--rappi)&quot;><span style=&quot;color:#fff;font-weight:800;font-size:16px&quot;>R</span></div>'">
+      </div>
+      <div>
+        <div class="sidebar-logo-text">Rappi</div>
+        <div class="sidebar-logo-sub">Analytics Platform</div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">Principal</div>
+    <div class="nav-item active" onclick="navigate('dashboard', this)">
+      <span class="nav-icon">📊</span> Dashboard
+    </div>
+    <div class="nav-item" onclick="navigate('chat', this)">
+      <span class="nav-icon">💬</span> Chat Analítico
+    </div>
+
+    <div class="sidebar-section">Reportes</div>
+    <div class="nav-item" onclick="navigate('reports', this)">
+      <span class="nav-icon">📄</span> Reportes
+    </div>
+    <div class="nav-item" onclick="navigate('history', this)">
+      <span class="nav-icon">🕒</span> Historial
+    </div>
+
+    <div class="sidebar-section">Referencia</div>
+    <div class="nav-item" onclick="navigate('dictionary', this)">
+      <span class="nav-icon">📚</span> Diccionario
+    </div>
+
+    <div class="sidebar-user">
+      <div class="user-row">
+        <div class="user-avatar" id="user-avatar">JD</div>
+        <div>
+          <div class="user-name" id="user-name">Usuario</div>
+          <div class="user-role">Operations Analyst</div>
+        </div>
+      </div>
+      <button class="logout-btn" onclick="doLogout()">← Cerrar sesión</button>
+    </div>
+  </div>
+
+  <!-- CONTENIDO -->
+  <div class="content" id="main-content">
+
+    <!-- DASHBOARD -->
+    <div class="page active" id="page-dashboard">
+      <div class="page-header">
+        <div class="page-title">Dashboard Operacional</div>
+        <div class="page-sub" id="dashboard-sub">Cargando datos...</div>
+      </div>
+      <div class="kpi-grid" id="kpi-grid">
+        <!-- Generado por JS -->
+      </div>
+      <div class="charts-grid">
+        <div class="card">
+          <div class="card-title">Perfect Orders — últimas 8 semanas</div>
+          <div id="chart-perfect-orders" class="chart-container"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Lead Penetration por país (semana actual)</div>
+          <div id="chart-lead-country" class="chart-container"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Alertas automáticas esta semana</div>
+        <div class="alert-grid" id="alert-grid">
+          <!-- Generado por JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- CHAT -->
+    <div class="page" id="page-chat">
+      <div class="page-header" style="display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div class="page-title">Chat Analítico</div>
+          <div class="page-sub">Pregunta en lenguaje natural · gráficos y tablas automáticos</div>
+        </div>
+      </div>
+      <div class="chat-layout">
+        <div class="chat-main">
+          <div class="chat-messages" id="chat-messages">
+            <!-- Mensajes generados por JS -->
+          </div>
+          <div class="chat-input-row">
+            <div class="chat-input-wrap">
+              <textarea
+                class="chat-input"
+                id="chat-input"
+                placeholder="Ej: ¿Cuáles son las zonas con mayor Lead Penetration esta semana?"
+                rows="1"
+                onkeydown="handleChatKey(event)"
+                oninput="autoResize(this)"
+              ></textarea>
+            </div>
+            <button class="chat-send-btn" id="chat-send-btn" onclick="sendChatMessage()">➤</button>
+          </div>
+        </div>
+        <div class="chat-sidebar">
+          <button class="new-chat-btn" onclick="newConversation()">+ Nueva conversación</button>
+          <div class="suggestions-box">
+            <div class="sug-title">💡 Sugerencias</div>
+            <div class="sug-item" onclick="fillChat('¿Cuáles son las zonas más problemáticas esta semana?')">Zonas problemáticas esta semana</div>
+            <div class="sug-item" onclick="fillChat('Muestra la evolución de Gross Profit UE en Chapinero últimas 8 semanas')">Tendencia Chapinero</div>
+            <div class="sug-item" onclick="fillChat('Compara Perfect Order entre zonas Wealthy y Non Wealthy en México')">Wealthy vs Non Wealthy MX</div>
+            <div class="sug-item" onclick="fillChat('¿Qué zonas crecen más en órdenes en las últimas 5 semanas y qué podría explicar ese crecimiento?')">Zonas con mayor crecimiento</div>
+            <div class="sug-item" onclick="fillChat('¿Cuál es el promedio de Lead Penetration por país?')">Promedio por país</div>
+            <div class="sug-item" onclick="fillChat('¿Qué zonas tienen alto Lead Penetration pero bajo Perfect Order?')">Alto LP, bajo PO</div>
+            <div class="sug-item" onclick="fillChat('¿Hay correlación entre Restaurants Markdowns y Perfect Orders?')">Correlación descuentos vs calidad</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- REPORTES -->
+    <div class="page" id="page-reports">
+      <div class="page-header">
+        <div class="page-title">Reportes Ejecutivos</div>
+        <div class="page-sub">Generados automáticamente con IA · descarga en HTML o CSV</div>
+      </div>
+      <div class="report-toolbar">
+        <button class="btn btn-primary" onclick="generateReport()">
+          <span>+</span> Generar nuevo reporte
+        </button>
+      </div>
+      <div id="reports-list">
+        <!-- Generado por JS -->
+      </div>
+    </div>
+
+    <!-- HISTORIAL -->
+    <div class="page" id="page-history">
+      <div class="page-header">
+        <div class="page-title">Historial</div>
+        <div class="page-sub">Conversaciones y reportes anteriores · haz clic para retomar</div>
+      </div>
+      <div class="tabs">
+        <button class="tab active" onclick="switchTab(this,'hist-chats')">💬 Conversaciones</button>
+        <button class="tab" onclick="switchTab(this,'hist-reports')">📄 Reportes</button>
+      </div>
+      <div id="hist-chats" class="history-list"></div>
+      <div id="hist-reports" class="history-list" style="display:none"></div>
+    </div>
+
+    <!-- DICCIONARIO -->
+    <div class="page" id="page-dictionary">
+      <div class="page-header">
+        <div class="page-title">Diccionario de Métricas</div>
+        <div class="page-sub">Definiciones completas · fórmulas · cómo interpretar cada métrica</div>
+      </div>
+      <div class="dict-grid" id="dict-grid">
+        <!-- Generado por JS -->
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /app -->
+
+<!-- Toast container -->
+<div id="toast-container"></div>
+
+<!-- Scripts -->
+<script src="/static/charts.js"></script>
+<script src="/static/app.js"></script>
+
+</body>
+</html>
