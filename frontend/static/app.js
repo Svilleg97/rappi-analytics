@@ -136,10 +136,23 @@ function navigate(page, navEl) {
   if (page === 'history')    loadHistory();
   if (page === 'reports') {
     loadReports();
-    // Si hay un job de reporte en progreso, retomar el polling
-    if (STATE.activeReportJob) resumeReportPolling(STATE.activeReportJob);
+    // Verificar si hay job activo en STATE o en sessionStorage
+    const activeJob = STATE.activeReportJob ||
+      (typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('rappi_report_job') : null);
+    if (activeJob && !document.getElementById('generating-card')) {
+      resumeReportPolling(activeJob);
+    }
   }
-  if (page === 'chat')       initChat();
+  if (page === 'chat') {
+    initChat();
+    // Re-renderizar gráficos de Plotly que perdieron dimensiones al estar hidden
+    setTimeout(() => {
+      document.querySelectorAll('.js-plotly-plot').forEach(el => {
+        try { Plotly.relayout(el, { autosize: true }); } catch(e) {}
+      });
+      window.dispatchEvent(new Event('resize'));
+    }, 50);
+  }
 }
 
 function switchTab(btn, targetId) {
@@ -592,6 +605,7 @@ async function resumeReportPolling(job_id) {
   try {
     const result = await pollJob('/api/reports/job/' + job_id, 3000, 120000);
     STATE.activeReportJob = null;
+    try { sessionStorage.removeItem('rappi_report_job'); } catch(e) {}
     document.getElementById('generating-card')?.remove();
     if (result && result.report_id) {
       showToast('✅ Reporte listo', 'success');
@@ -602,6 +616,7 @@ async function resumeReportPolling(job_id) {
     }
   } catch(e) {
     STATE.activeReportJob = null;
+    try { sessionStorage.removeItem('rappi_report_job'); } catch(e2) {}
     document.getElementById('generating-card')?.remove();
     loadReports();
   }
@@ -611,6 +626,36 @@ async function loadReports() {
   const container = document.getElementById('reports-list');
   if (!container) return;
   container.innerHTML = '<div class="empty-state"><div class="spinner spinner-lg"></div></div>';
+
+  // Verificar si hay un job pendiente en sessionStorage que aún no terminó
+  const pendingJob = STATE.activeReportJob ||
+    (typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('rappi_report_job') : null);
+  if (pendingJob && !document.getElementById('generating-card')) {
+    try {
+      const jobRes  = await apiFetch('/api/reports/job/' + pendingJob);
+      const jobData = await jobRes.json();
+      if (jobData.status === 'done') {
+        // Ya terminó — limpiar y mostrar
+        STATE.activeReportJob = null;
+        try { sessionStorage.removeItem('rappi_report_job'); } catch(e) {}
+        if (jobData.result && jobData.result.report_id) {
+          showToast('✅ Reporte listo', 'success');
+          setTimeout(() => previewReport(jobData.result.report_id), 300);
+        }
+      } else if (jobData.status === 'processing' || jobData.status === 'pending') {
+        // Todavía procesando — mostrar spinner y retomar polling
+        resumeReportPolling(pendingJob);
+      } else {
+        // Error o estado desconocido — limpiar
+        STATE.activeReportJob = null;
+        try { sessionStorage.removeItem('rappi_report_job'); } catch(e) {}
+      }
+    } catch(e) {
+      STATE.activeReportJob = null;
+      try { sessionStorage.removeItem('rappi_report_job'); } catch(e2) {}
+    }
+  }
+
   try {
     const res = await apiFetch('/api/reports/list');
     const { reports } = await res.json();
@@ -821,8 +866,10 @@ async function submitReportConfig() {
     });
     const { job_id } = await res.json();
     STATE.activeReportJob = job_id;
+    try { sessionStorage.setItem('rappi_report_job', job_id); } catch(e) {}
     const result = await pollJob('/api/reports/job/' + job_id, 3000, 180000);
     STATE.activeReportJob = null;
+    try { sessionStorage.removeItem('rappi_report_job'); } catch(e) {}
     document.getElementById('generating-card')?.remove();
     if (result && result.error) {
       showToast('Error generando reporte: ' + result.error, 'error');
@@ -833,6 +880,7 @@ async function submitReportConfig() {
     }
   } catch (e) {
     STATE.activeReportJob = null;
+    try { sessionStorage.removeItem('rappi_report_job'); } catch(e) {}
     document.getElementById('generating-card')?.remove();
     showToast('Error de conexión', 'error');
   }
@@ -1010,14 +1058,17 @@ async function resumeConversation(sessionId) {
     STATE.sessionId = sessionId;
 
     // Agregar mensaje de contexto
-    addBotMessage(`📂 *Retomando conversación anterior*\n\n${data.summary || 'Contexto cargado. ¿En qué continuamos?'}`);
+    addBotMessage(`📂 *Retomando conversación anterior*\n\n${data.summary || 'Contexto cargado. ¿En qué continuamos?'}\n\n> 💡 *Los gráficos de sesiones anteriores no se persisten. Puedes volver a pedirlos y se regenerarán al instante.*`);
 
     // Mostrar últimos 6 mensajes del historial
     const history = data.messages || [];
     const recent  = history.slice(-6);
     recent.forEach(m => {
       if (m.role === 'user')      addUserMessage(m.content);
-      else if (m.role === 'assistant') addBotMessage(m.content);
+      else if (m.role === 'assistant') {
+        // Los mensajes del historial no tienen tool_calls — solo mostrar texto
+        addBotMessage(m.content, []);
+      }
     });
 
     // Navegar al chat
