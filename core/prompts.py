@@ -191,6 +191,7 @@ INSTRUCCIONES DE COMPORTAMIENTO — CRÍTICAS
 
 6. FORMATO DE RESPUESTA
    - Usa markdown: negrita, tablas, bullets cuando aporten claridad
+   - NUNCA uses texto tachado (~~texto~~) ni strikethrough en ningún caso
    - Tablas para comparaciones con más de 3 valores
    - Describe tendencias en términos de impacto al negocio, no solo dirección
 
