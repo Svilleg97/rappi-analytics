@@ -235,7 +235,12 @@ input, textarea, select { font-family: inherit; }
   display: grid; grid-template-columns: 1fr 1fr;
   gap: 14px; margin-bottom: 18px;
 }
-.chart-container { min-height: 200px; }
+.chart-container {
+  min-height: 200px;
+  min-width: 0;
+  overflow: hidden;
+  width: 100%;
+}
 
 /* ── Alert badges ── */
 .alert-grid {

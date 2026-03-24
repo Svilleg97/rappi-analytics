@@ -42,6 +42,7 @@ function baseLayout(overrides = {}) {
     paper_bgcolor: 'rgba(0,0,0,0)',
     plot_bgcolor:  'rgba(0,0,0,0)',
     margin:      { t: 10, r: 16, b: 40, l: 48 },
+    autosize:    true,
     showlegend:  false,
     xaxis: {
       gridcolor:    '#F3F4F6',
@@ -393,4 +394,10 @@ function renderLeadByCountry(countryData) {
     values: countryData.map(r => r.avg_value),
     colors: countryData.map((_, i) => RAPPI_PALETTE[i % RAPPI_PALETTE.length])
   }, { isPercent: true, height: 160 });
+  // Forzar resize después de render para que Plotly calcule bien el ancho
+  setTimeout(() => {
+    const el = document.getElementById('chart-lead-country');
+    if (el && el._fullLayout) Plotly.relayout(el, { autosize: true });
+    window.dispatchEvent(new Event('resize'));
+  }, 100);
 }
