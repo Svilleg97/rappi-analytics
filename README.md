@@ -88,9 +88,16 @@ rappi-analytics/
 ├── models/
 │   └── schemas.py          # Tipos Pydantic para validación de requests
 ├── data/
-│   ├── rappi_data.xlsx     # Dataset operacional anonimizado (incluido en repo)
+│   ├── rappi_data.xlsx     # Dataset operacional (no incluido en repo)
 │   ├── history/            # Conversaciones guardadas (JSON)
 │   └── reports/            # Reportes generados (JSON + HTML)
+├── tests/
+│   ├── test_data_engine.py # 25 tests unitarios del motor de análisis
+│   ├── test_api.py         # 20 tests de integración de endpoints
+│   ├── test_brief_cases.py # 12 tests de regresión — 6 casos del brief
+│   ├── test_persistence.py # 16 tests del sistema de persistencia
+│   └── test_llm_engine.py  # 11 tests del motor LLM con mocks
+├── pytest.ini              # Configuración de pytest
 └── frontend/
     ├── index.html          # Shell principal con login y navegación
     └── static/
@@ -213,7 +220,7 @@ DEMO_PASSWORD=demo123            # Contraseña de demo
 | Arquitectura y diseño técnico | 15% | FastAPI modular, separación api/core/frontend, Tool Use pattern |
 | Calidad del bot | 35% | 6/6 casos de uso validados, respuestas con profundidad de negocio |
 | Calidad de insights | 30% | 5 categorías de insights, recomendaciones accionables por zona |
-| Código y documentación | 5% | Archivos <250 líneas, comentarios en funciones clave, este README |
+| Código y documentación | 5% | Archivos <250 líneas, 92 tests (pytest), comentarios en funciones clave, este README |
 | Presentación | 20% | Demo en vivo preparada con 6 preguntas de complejidad creciente |
 
 ---
